@@ -1,24 +1,47 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    // Retrieve the order data and table number from the request
-    $orderData = $_POST['orderData'];
-    $tableNumber = $_POST['tableNumber'];
+$tableNumber = isset($_POST['tableNumber']) ? $_POST['tableNumber'] : '';
+$orderData = isset($_POST['orderData']) ? $_POST['orderData'] : '';
 
-    echo $tableNumber;
-    // Process the order data
-    $orderData = json_decode($orderData, true);
+// Process the order data
+$orderDataArray = json_decode($orderData, true);
 
-    // You can perform any necessary operations with the order data here, such as saving it to a database, sending it via email, etc.
+// Print the received data
+echo "Order received for Table Number: " . $tableNumber . "<br>";
 
-    // Generate a response or perform any additional tasks as needed
-    $response = array(
-        'status' => 'success',
-        'message' => 'Order placed successfully',
-        'tableNumber' => $tableNumber,
-        'orderData' => $orderData
-    );
+// Connect to the database
+$conn = new mysqli("localhost", "root", "", "coffee");
 
-    // Send the response back to the client
-    echo json_encode($response);
+// Check for connection errors
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
 }
+
+// Loop through each order item
+foreach ($orderDataArray as $orderItem) {
+    $teaName = $orderItem['teaName'];
+    $quantity = $orderItem['quantity'];
+    $price = $orderItem['price'];
+    $total = $orderItem['total'];
+
+    // Insert the order item into the database
+    $query = "INSERT INTO `order` (tableNo, name, price, quantity, total) 
+              VALUES ('$tableNumber', '$teaName', '$price', '$quantity', '$total')";
+
+    // Execute the query
+    if ($conn->query($query) === TRUE) {
+        echo "Order item inserted successfully.<br>";
+    } else {
+        echo "Failed to insert order item: " . $conn->error . "<br>";
+    }
+
+    // Perform operations with the individual elements
+    // For example, you can echo them or store them in a database
+    echo "Tea Name: " . $teaName . "<br>";
+    echo "Quantity: " . $quantity . "<br>";
+    echo "Price: " . $price . "<br>";
+    echo "Total: " . $total . "<br>";
+}
+
+// Close the database connection
+$conn->close();
 ?>
