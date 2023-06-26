@@ -106,46 +106,90 @@
             </form>
         </div>
     </div>
-    <script src="main.js"></script>
     <script>
+         function updateGrandTotal() {
+            var totalElements = document.getElementsByClassName("total");
+            var grandTotal = 0;
+
+            for (var i = 0; i < totalElements.length; i++) {
+                var total = parseInt(totalElements[i].textContent);
+                grandTotal += total;
+            }
+
+            var grandTotalElement = document.getElementById("grandTotal");
+            grandTotalElement.textContent = grandTotal;
+        }
+
+        function incrementQuantity(index) {
+            var quantityElement = document.getElementsByClassName("tab")[index];
+            var totalElement = document.getElementsByClassName("total")[index];
+
+            var quantity = parseInt(quantityElement.textContent);
+            quantity++;
+            quantityElement.textContent = quantity;
+
+            var price = parseInt(quantityElement.parentNode.previousElementSibling.textContent);
+            var total = quantity * price;
+            totalElement.textContent = total;
+
+            updateGrandTotal();
+        }
+
+        function decrementQuantity(index) {
+            var quantityElement = document.getElementsByClassName("tab")[index];
+            var totalElement = document.getElementsByClassName("total")[index];
+
+            var quantity = parseInt(quantityElement.textContent);
+            if (quantity > 0) {
+                quantity--;
+                quantityElement.textContent = quantity;
+
+                var price = parseInt(quantityElement.parentNode.previousElementSibling.textContent);
+                var total = quantity * price;
+                totalElement.textContent = total;
+
+                updateGrandTotal();
+            }
+        }
+
         function prepareOrder() {
-    var orderData = [];
-    var tableNumber = document.getElementById('table-number').value;
-    var teaRows = document.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-    console.log(orderData);
+            var orderData = [];
+            var tableNumber = document.getElementById('table-number').value;
+            var teaRows = document.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            console.log(orderData);
 
-    for (var i = 0; i < teaRows.length - 1; i++) {
-        var teaName = teaRows[i].getElementsByTagName('td')[0].innerHTML;
-        var quantity = parseInt(teaRows[i].getElementsByClassName('tab')[0].innerHTML);
-        var price = parseInt(teaRows[i].getElementsByTagName('td')[1].innerHTML);
-        var total = parseInt(teaRows[i].getElementsByClassName('total')[0].innerHTML);
+            for (var i = 0; i < teaRows.length - 1; i++) {
+                var teaName = teaRows[i].getElementsByTagName('td')[0].innerHTML;
+                var quantity = parseInt(teaRows[i].getElementsByClassName('tab')[0].innerHTML);
+                var price = parseInt(teaRows[i].getElementsByTagName('td')[1].innerHTML);
+                var total = parseInt(teaRows[i].getElementsByClassName('total')[0].innerHTML);
 
-        if (quantity > 0) {
-            orderData.push({
-                teaName: teaName,
-                quantity: quantity,
-                price: price,
-                total: total
-            });
+                if (quantity > 0) {
+                    orderData.push({
+                        teaName: teaName,
+                        quantity: quantity,
+                        price: price,
+                        total: total
+                    });
+                }
+            }
+
+            var orderDataInput = document.getElementById('orderDataInput');
+            orderDataInput.value = JSON.stringify(orderData);
+
+            var xhr = new XMLHttpRequest();
+            var url = 't.php';
+            xhr.open('POST', url, true);
+            xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    console.log(xhr.responseText);
+                }
+            };
+
+            var params = 'tableNumber=' + tableNumber + '&orderData=' + encodeURIComponent(JSON.stringify(orderData));
+            xhr.send(params);
         }
-    }
-
-    var orderDataInput = document.getElementById('orderDataInput');
-    orderDataInput.value = JSON.stringify(orderData);
-
-    var xhr = new XMLHttpRequest();
-    var url = 't.php';
-    xhr.open('POST', url, true);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-    xhr.onreadystatechange = function() {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            console.log(xhr.responseText);
-        }
-    };
-
-    var params = 'tableNumber=' + tableNumber + '&orderData=' + encodeURIComponent(JSON.stringify(orderData));
-    xhr.send(params);
-}
     </script>
 </body>
 

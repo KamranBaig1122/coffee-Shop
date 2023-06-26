@@ -45,59 +45,56 @@
                 </table>
                 <p id="no-data-message" style="display: none; color: red;">No data available for the selected table.</p>
                 <input type="hidden" id="orderDataInput" name="orderData" />
-                <button type="button" class="order"><a href="chef.php" style="text-decoration: none; color:black;">COMPLETE</a></button>
+                <button type="button" class="order">COMPLETE</button>
             </form>
         </div>
     </div>
     <script src="main.js"></script>
     <script>
+        function fetchOrderData() {
+            const tableNumberSelect = document.getElementById("table-number");
+            const selectedTableNumber = tableNumberSelect.value;
+            const url = `a.php?tableNumber=${selectedTableNumber}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    updateTableRows(data);
+                })
+                .catch(error => {
+                    console.log("Error fetching order data:", error);
+                });
+        }
+
+        function updateTableRows(orderData) {
+            const tableBody = document.querySelector("#order-table tbody");
+            const noDataMessage = document.getElementById("no-data-message");
+            tableBody.innerHTML = "";
+
+            if (orderData.length > 0) {
+                noDataMessage.style.display = "none";
+
+                orderData.forEach(item => {
+                    const { name, quantity } = item;
+
+                    const row = document.createElement("tr");
+                    const nameCell = document.createElement("td");
+                    const quantityCell = document.createElement("td");
+
+                    nameCell.textContent = name;
+                    quantityCell.textContent = quantity;
+
+                    row.appendChild(nameCell);
+                    row.appendChild(quantityCell);
+
+                    tableBody.appendChild(row);
+                });
+            } else {
+                noDataMessage.style.display = "block";
+            }
+        }
+
         document.addEventListener("DOMContentLoaded", function () {
-            function fetchOrderData() {
-                const tableNumberSelect = document.getElementById("table-number");
-                const selectedTableNumber = tableNumberSelect.value;
-                const url = `a.php?tableNumber=${selectedTableNumber}`;
-
-                fetch(url)
-                    .then(response => response.json())
-                    .then(data => {
-                        updateTableRows(data);
-                    })
-                    .catch(error => {
-                        console.log("Error fetching order data:", error);
-                    });
-            }
-            function updateTableRows(orderData) {
-                const tableBody = document.querySelector("#order-table tbody");
-                const grandTotalCell = document.getElementById("grandTotal");
-                const noDataMessage = document.getElementById("no-data-message");
-                tableBody.innerHTML = "";
-                let grandTotal = 0;
-
-                if (orderData.length > 0) {
-                    noDataMessage.style.display = "none";
-
-                    orderData.forEach(item => {
-                        const { name, price, quantity, total } = item;
-
-                        const row = document.createElement("tr");
-                        const nameCell = document.createElement("td");
-                        const priceCell = document.createElement("td");
-                        const quantityCell = document.createElement("td");
-                        const totalCell = document.createElement("td");
-
-                        nameCell.textContent = name;
-                        quantityCell.textContent = quantity;
-
-                        row.appendChild(nameCell);
-                        row.appendChild(quantityCell);
-
-                        tableBody.appendChild(row);
-
-                    });
-                } else {
-                    noDataMessage.style.display = "block";
-                }
-            }
             const tableNumberSelect = document.getElementById("table-number");
             tableNumberSelect.addEventListener("change", fetchOrderData);
 

@@ -20,6 +20,11 @@
         </div>
     </div>
 
-    <script src="main.js"></script>
+    <script>
+        function myMenu(){
+    window.location.href = "menu.php";
+}
+    </script>
+
 </body>
 </html>
